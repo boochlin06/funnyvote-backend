@@ -1,0 +1,60 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 輔助驗證函式
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // 1. 用戶個人檔案
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+
+      // 個人收藏子集合
+      match /favorites/{pollId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // 2. 投票主集合
+    match /polls/{pollId} {
+      // 公開投票允許所有人讀取；私人投票需已認證
+      allow read: if resource.data.security == "00" || isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.authorId == request.auth.uid;
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated() && resource.data.authorId == request.auth.uid;
+
+      // 選項子集合
+      match /options/{optionId} {
+        allow read: if true;
+        allow create: if isAuthenticated();
+        allow update: if isAuthenticated();
+      }
+
+      // 投票者記錄 (Insert-only 防刷票：一人一票)
+      match /voters/{userId} {
+        allow read: if isAuthenticated();
+        // 只能建立屬於自己的紀錄，且不得重複寫入
+        allow create: if isOwner(userId) && !exists(/databases/$(database)/documents/polls/$(pollId)/voters/$(userId));
+        allow update, delete: if false;
+      }
+    }
+
+    // 3. 密碼保護零信任集合 (Path-based Secrets)
+    match /secure_polls/{secretHash} {
+      allow get: if isAuthenticated();
+      allow list: if false; // 禁止清單遍歷，只能透過精確 hash 取得
+      allow create: if isAuthenticated();
+    }
+
+    // 4. 首頁輪播推薦橫幅
+    match /promotions/{promoId} {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}

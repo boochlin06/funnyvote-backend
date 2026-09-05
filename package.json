@@ -1,0 +1,27 @@
+{
+  "name": "funnyvote-backend",
+  "version": "1.0.0",
+  "description": "FunnyVote Firebase Backend Infrastructure, Security Rules, and Admin Scripts",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "firebase deploy --project funny-vote-2e6be",
+    "deploy:rules": "firebase deploy --only firestore:rules,storage --project funny-vote-2e6be",
+    "deploy:indexes": "firebase deploy --only firestore:indexes --project funny-vote-2e6be",
+    "emulators": "firebase emulators:start --project funny-vote-2e6be",
+    "seed": "node scripts/seed.js"
+  },
+  "keywords": [
+    "firebase",
+    "firestore",
+    "android",
+    "funnyvote"
+  ],
+  "author": "heaton",
+  "license": "MIT",
+  "dependencies": {
+    "firebase-admin": "^12.7.0"
+  },
+  "devDependencies": {
+    "firebase-tools": "^13.30.0"
+  }
+}
