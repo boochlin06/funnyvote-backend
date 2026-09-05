@@ -18,6 +18,11 @@ service cloud.firestore {
       match /favorites/{pollId} {
         allow read, write: if isOwner(userId);
       }
+
+      // 我參與過的投票子集合
+      match /voted_polls/{pollId} {
+        allow read, write: if isOwner(userId);
+      }
     }
 
     // 2. 投票主集合

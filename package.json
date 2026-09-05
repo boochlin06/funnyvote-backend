@@ -23,6 +23,6 @@
     "firebase-admin": "^12.7.0"
   },
   "devDependencies": {
-    "firebase-tools": "^13.30.0"
+    "firebase-tools": "^15.29.0"
   }
 }

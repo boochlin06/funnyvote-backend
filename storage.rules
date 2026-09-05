@@ -5,23 +5,28 @@ service firebase.storage {
       return request.auth != null;
     }
 
-    // 封面圖片與頭像
-    match /polls/{pollId}/{allPaths=**} {
+    // 1. 投票封面圖：限 Google 認證登入（非匿名）、限圖片格式、單檔限制 300KB (本機壓至 800px 約 80-150KB)
+    match /polls/{pollId}/{fileName} {
       allow read: if true;
-      allow write: if isAuthenticated() && request.resource.size < 5 * 1024 * 1024
-                   && request.resource.contentType.matches('image/.*');
+      allow create, update: if isAuthenticated()
+                            && request.auth.token.firebase.sign_in_provider != 'anonymous'
+                            && request.resource.contentType.matches('image/(jpeg|png|webp)')
+                            && request.resource.size < 300 * 1024;
+      allow delete: if isAuthenticated();
     }
 
-    match /users/{userId}/{allPaths=**} {
+    // 2. 使用者頭像：所有人（含訪客）皆可上傳個人頭像，限本人、限圖片、單檔限制 200KB
+    match /users/{userId}/{fileName} {
       allow read: if true;
       allow write: if isAuthenticated() && request.auth.uid == userId
-                   && request.resource.size < 2 * 1024 * 1024
-                   && request.resource.contentType.matches('image/.*');
+                    && request.resource.contentType.matches('image/(jpeg|png|webp)')
+                    && request.resource.size < 200 * 1024;
     }
 
+    // 3. 焦點推薦橫幅：禁止客戶端直接寫入
     match /promotions/{allPaths=**} {
       allow read: if true;
-      allow write: if false; // 管理員上傳
+      allow write: if false;
     }
   }
 }
