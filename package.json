@@ -8,7 +8,8 @@
     "deploy:rules": "firebase deploy --only firestore:rules,storage --project funny-vote-2e6be",
     "deploy:indexes": "firebase deploy --only firestore:indexes --project funny-vote-2e6be",
     "emulators": "firebase emulators:start --project funny-vote-2e6be",
-    "seed": "node scripts/seed.js"
+    "seed": "node scripts/seed.js",
+    "seed:50": "node scripts/seed_50_polls.js"
   },
   "keywords": [
     "firebase",
